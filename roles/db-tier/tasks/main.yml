@@ -1,2 +1,27 @@
 ---
 # tasks file for db-tier
+- name: install "{{payload}}"
+  yum:
+    name: "{{payload}}"
+    state: latest
+  register: dbinstalled
+
+- name: enable "{{payload}}" at boot
+  service:
+    name: postgresql
+    enabled: yes
+
+
+ # only run the next 2 tasks once!
+
+- name: initilize postgres
+  command: postgresql-setup initdb
+  when: dbinstalled.changed
+- name: initilize postgres some more
+  command: chkconfig postgresql on
+  when: dbinstalled.changed
+
+- name: start postgres
+  service:
+   name: postgresql.service
+   state: started
